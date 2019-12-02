@@ -39,23 +39,27 @@ def main():
     for d in drugbank_pdb_mapping:
         d_values_list = (list(d.values()))
         db_hetcode_dict[d_values_list[0]] = d_values_list[1]
-    print(db_hetcode_dict)
+    #print(db_hetcode_dict)
 
     #this is a test dictionary to check the output format
     test_dict = {'IEM': 'DB07960', 'DFT': 'DB07652', 'FTS': 'DB07798', 'BHI': 'DB04170', 'TDA': 'DB02448', 'LC1': 'DB08083'}
     results_list = []
 
     #to get the full result replace test_dict in next line with db_hetcode_dict once you are happy with the result
-    for hetcode, drugbank_id in test_dict.items():
+    for hetcode, drugbank_id in db_hetcode_dict.items():
 
         #query pdbe rest api
-        pdbe_qeury = SearchAPI(search_url='https://www.ebi.ac.uk/pdbe/api/pdb/compound/in_pdb/{}'.format(hetcode))
+        compound_url = 'https://www.ebi.ac.uk/pdbe/api/pdb/compound/in_pdb/{}'.format(hetcode)
+        #print(drugbank_id, hetcode)
+        pdbe_qeury = SearchAPI(search_url=compound_url)
         pdb_list_dict = pdbe_qeury.run_search()
-
-        #create the data structure
-        for het_id, pdb_id in pdb_list_dict.items():
-            data_tuple = Data_tuple(dgb =drugbank_id, het = het_id, pdb_id = pdb_id)
-            results_list.append(data_tuple)
+        if pdb_list_dict:
+            #create the data structure
+            for het_id, pdb_id in pdb_list_dict.items():
+                data_tuple = Data_tuple(dgb =drugbank_id, het = het_id, pdb_id = pdb_id)
+                results_list.append(data_tuple)
+        else:
+            print("{} not available".format(hetcode))
 
     with open('output.csv', 'w', newline='') as f:
         w = csv.writer(f)
